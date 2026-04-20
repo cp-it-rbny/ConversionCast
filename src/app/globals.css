@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #f8fafc; /* slate-50 */
+  --color-bg-secondary: #ffffff; /* white */
+  --color-text-primary: #0f172a; /* slate-900 */
+  --color-text-secondary: #64748b; /* slate-500 */
+  --color-text-muted: #94a3b8; /* slate-400 */
+  --color-border-subtle: #e2e8f0; /* slate-200 */
+  
+  --color-signal-green: #10b981; /* emerald-500 */
+  --color-signal-blue: #3b82f6; /* blue-500 */
+  --color-signal-red: #ef4444; /* red-500 */
+
+  --font-inter: "Inter", sans-serif;
+
+  @keyframes pulse-subtle {
+    0%, 100% { border-color: var(--color-border-subtle); box-shadow: none; }
+    50% { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 0 12px rgba(16, 185, 129, 0.1); }
+  }
+
+  @keyframes slide-in {
+    from { transform: translateY(8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  --animate-pulse-subtle: pulse-subtle 3s ease-in-out;
+  --animate-slide-in: slide-in 0.4s ease-out;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-primary text-text-primary font-inter antialiased overflow-x-hidden;
+  }
+}
+
+@layer components {
+  .clean-card {
+    @apply bg-bg-secondary border border-border-subtle rounded-xl shadow-sm transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-text-primary text-bg-secondary rounded-lg font-medium text-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-bg-secondary border border-border-subtle text-text-primary rounded-lg font-medium text-sm hover:bg-bg-primary active:scale-95 transition-all cursor-pointer;
+  }
+
+  .badge-emerald {
+    @apply px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold uppercase tracking-wider;
+  }
+
+  .badge-slate {
+    @apply px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold uppercase tracking-wider;
+  }
+}
+
+/* Custom Utilities */
+.signal-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300;
+}
