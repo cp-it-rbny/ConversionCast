@@ -19,6 +19,7 @@ export class SITicketsClient {
   async fetchOrders(options?: {
     limit?: number;
     endDate?: string;
+    since?: string;
   }): Promise<{ data: RawTicketOrder[]; count: number; hasMoreRecords: boolean }> {
     try {
       const url = new URL(BASE_URL);
@@ -29,6 +30,10 @@ export class SITicketsClient {
 
       if (options?.endDate) {
         url.searchParams.append("endDate", options.endDate);
+      }
+
+      if (options?.since) {
+        url.searchParams.append("since", options.since);
       }
 
       console.log(`📡 [SITicketsClient] Fetching: ${url.toString()}`);

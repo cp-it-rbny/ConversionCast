@@ -42,6 +42,7 @@ class PollerService {
     let duplicateCount = 0;
     
     try {
+      const sinceDate = new Date(Date.now() - 30 * 60 * 1000).toISOString();
       let currentEndDate: string | undefined = undefined;
       let hasMore = true;
       let pageCount = 0;
@@ -56,7 +57,8 @@ class PollerService {
         // Fetch 100 items per user request for production sweeping
         const { data: rawOrders } = await siTicketsClient.fetchOrders({
           limit: 100, 
-          endDate: currentEndDate
+          endDate: currentEndDate,
+          since: sinceDate
         });
 
         if (!rawOrders || rawOrders.length === 0) {
@@ -119,26 +121,17 @@ class PollerService {
           processedCount++;
         }
 
-        // --- Backward Sweep Logic ---
-        // Inspect the smallest orderId in this batch (last item since API returns desc)
+        // --- Pagination Logic ---
         const smallestItem = rawOrders[rawOrders.length - 1];
-        const smallestId = parseInt(smallestItem.orderId, 10);
 
-        if (this.lastPulledOrderId === null) {
-          // Initial run: we don't have a reference, so we just process one page and stop
-          // to avoid sweeping back to the beginning of time.
-          console.log(`ℹ️ [Poller] Initial run complete. Setting reference OrderId to smallest in batch: ${smallestId}`);
-          break;
-        }
-
-        // If the smallest ID in this page is STILL larger than our last known ID,
-        // it means there are more orders between this page and our reference.
-        // We adjust the endDate to the date of this smallest item to grab the next batch.
-        if (smallestId > this.lastPulledOrderId) {
-          console.log(`ℹ️ [Poller] Smallest ID ${smallestId} > Reference ${this.lastPulledOrderId}. Sweeping backward...`);
+        // We use 'since' param, so the API automatically restricts to our time window.
+        // If we received exactly the limit (100), there might be more records in this window.
+        // So we paginate using endDate.
+        if (rawOrders.length === 100) {
+          console.log(`ℹ️ [Poller] Fetched limit (100). Paginating backward...`);
           currentEndDate = smallestItem.orderDate;
         } else {
-          console.log(`ℹ️ [Poller] Smallest ID ${smallestId} <= Reference ${this.lastPulledOrderId}. Sweep caught up!`);
+          console.log(`ℹ️ [Poller] Fetched < 100 records. End of time window reached!`);
           hasMore = false;
         }
       }
