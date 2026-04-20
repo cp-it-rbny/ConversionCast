@@ -108,6 +108,7 @@ export interface CastResult {
   timestamp: number;
   response?: Record<string, unknown>;
   error?: string;
+  requestBody?: Record<string, unknown>;
 }
 
 /**

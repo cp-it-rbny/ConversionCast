@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import StatsBar from "@/components/StatsBar";
 import FunnelBoard from "@/components/FunnelBoard";
 import ConnectDestinationModal from "@/components/ConnectDestinationModal";
+import EventLogTable from "@/components/EventLogTable";
 
 const DEFAULT_STATS: DashboardStats = {
   totalSignals: 0,
@@ -37,6 +38,7 @@ export default function Dashboard() {
   const [isDestModalOpen, setIsDestModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshingId, setIsRefreshingId] = useState<string | null>(null);
+  const [signals, setSignals] = useState<FunnelSignal[]>([]);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   // Sync initial data
@@ -45,6 +47,7 @@ export default function Dashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.stats) setStats(data.stats);
+        if (data.signals) setSignals(data.signals);
         setConnectors(prev => prev.map(c => ({
           ...c,
           totalCasts: data.stats.successfulCasts || 0,
@@ -69,10 +72,25 @@ export default function Dashboard() {
           if (payload.type === "signal" && payload.data) {
             const signal = payload.data as FunnelSignal;
             
+            // Update signals list logic:
+            // 1. If signal exists (status update), update in place
+            // 2. If new signal, unshift to front
+            let isNew = false;
+            setSignals(current => {
+              const index = current.findIndex(s => s.id === signal.id);
+              if (index !== -1) {
+                const next = [...current];
+                next[index] = signal;
+                return next;
+              }
+              isNew = true;
+              return [signal, ...current].slice(0, 200); // Buffer limit
+            });
+
             // Update stats
             setStats(prev => ({
               ...prev,
-              totalSignals: prev.totalSignals + 1,
+              totalSignals: isNew ? prev.totalSignals + 1 : prev.totalSignals,
               successfulCasts: prev.successfulCasts + (signal.status === "cast" ? 1 : 0),
               averageStrength: signal.signalStrength,
               lastCastTime: Date.now()
@@ -188,6 +206,8 @@ export default function Dashboard() {
           onRefreshSource={handleRefreshSource}
           isRefreshingSource={isRefreshingId}
         />
+
+        <EventLogTable signals={signals} />
       </main>
 
       <footer className="py-10 px-6 border-t border-slate-200 bg-white">

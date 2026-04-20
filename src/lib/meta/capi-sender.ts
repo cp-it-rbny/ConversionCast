@@ -84,6 +84,7 @@ export async function castToMeta(
       mode: "dry-run",
       timestamp: Date.now(),
       response: { message: "Dry-run mode — payload logged to console" },
+      requestBody: payload,
     };
   }
 
@@ -126,6 +127,7 @@ export async function castToMeta(
           mode,
           timestamp: Date.now(),
           response: responseData as Record<string, unknown>,
+          requestBody: payload,
         };
       }
 
@@ -163,5 +165,6 @@ export async function castToMeta(
     mode,
     timestamp: Date.now(),
     error: lastError,
+    requestBody: payload,
   };
 }
