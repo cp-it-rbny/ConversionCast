@@ -111,11 +111,11 @@ class PollerService {
           signalStore.addSignal(uiSignal);
 
           // 6. Cast to Meta CAPI (Egress)
-          castToMeta(hashed, options?.credentials).then((result) => {
-            signalStore.updateSignal(uiSignal.id, {
-              status: result.success ? "cast" : "failed",
-              castResult: result,
-            });
+          // Awaiting the cast ensures that Vercel doesn't kill the function before Meta receives the event.
+          const result = await castToMeta(hashed, options?.credentials);
+          signalStore.updateSignal(uiSignal.id, {
+            status: result.success ? "cast" : "failed",
+            castResult: result,
           });
 
           processedCount++;
