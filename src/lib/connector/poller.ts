@@ -42,7 +42,7 @@ class PollerService {
     let duplicateCount = 0;
     
     try {
-      const sinceDate = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       let currentEndDate: string | undefined = undefined;
       let hasMore = true;
       let pageCount = 0;
