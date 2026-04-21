@@ -72,6 +72,16 @@ class PollerService {
             highestOrderIdInRun = currentId;
           }
 
+          // 0. Filter by Business Rules (Transaction only, valid payment method)
+          const isTransaction = rawOrder.orderType?.toLowerCase() === "transaction";
+          const paymentMethod = rawOrder.paymentMethod?.toLowerCase() || "";
+          const isValidPayment = paymentMethod !== "comp" && paymentMethod !== "none";
+
+          if (!isTransaction || !isValidPayment) {
+            console.log(`ℹ️ [Poller] Skipping order ${rawOrder.orderId}: type=${rawOrder.orderType}, payment=${rawOrder.paymentMethod}`);
+            continue;
+          }
+
           // 1. Validate
           const { valid } = validateTicketOrder(rawOrder);
           if (!valid) {
