@@ -56,9 +56,21 @@ export async function GET() {
         } catch {
           clearInterval(checkClosed);
           clearInterval(keepalive);
+          clearTimeout(vercelTimeoutPreventer);
           signalStore.unsubscribe(subId);
         }
       }, 60000);
+
+      // Prevent Vercel 300s Timeout errors by cleanly closing the stream at 290s
+      // This forces the browser to cleanly reconnect via EventSource without throwing a 504 error.
+      const vercelTimeoutPreventer = setTimeout(() => {
+        try {
+          clearInterval(checkClosed);
+          clearInterval(keepalive);
+          signalStore.unsubscribe(subId);
+          controller.close();
+        } catch {}
+      }, 290000);
     },
   });
 
