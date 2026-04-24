@@ -20,6 +20,24 @@ class PollerService {
   private static readonly CRON_INTERVAL_MS = 60 * 60 * 1000;
 
   /**
+   * Bootstrap timestamp read from env on cold start.
+   * Set LAST_POLL_TIME in Vercel env vars to the last order date from the
+   * previous deployment so the first run doesn't miss any records.
+   * Example value: "2026-04-24T05:24:16.000Z"
+   */
+  private static readonly BOOTSTRAP_POLL_TIME: number | null = (() => {
+    const env = process.env.LAST_POLL_TIME;
+    if (!env) return null;
+    const ms = new Date(env).getTime();
+    if (isNaN(ms)) {
+      console.warn("⚠️ [Poller] LAST_POLL_TIME env var is not a valid date, ignoring.");
+      return null;
+    }
+    console.log(`🔖 [Poller] Bootstrap poll time from env: ${env}`);
+    return ms;
+  })();
+
+  /**
    * Fetches the latest orders from the provider API.
    * Processes them through the zero-knowledge pipeline.
    */
@@ -46,11 +64,13 @@ class PollerService {
     let duplicateCount = 0;
     
     try {
-      // Derive the "since" window from the last *successful* poll time.
-      // On a cold serverless start lastSuccessfulPollTime is null, so we fall
-      // back to one cron interval ago (1 h) — matching the Vercel schedule.
+      // Derive the "since" window — fallback chain:
+      //   1. lastSuccessfulPollTime  (warm instance, same deployment)
+      //   2. BOOTSTRAP_POLL_TIME     (env var seeded from prior deployment)
+      //   3. CRON_INTERVAL_MS ago    (absolute last resort)
       const sinceTimestamp =
         this.lastSuccessfulPollTime ??
+        PollerService.BOOTSTRAP_POLL_TIME ??
         Date.now() - PollerService.CRON_INTERVAL_MS;
       const sinceDate = new Date(sinceTimestamp).toISOString();
       console.log(`🕐 [Poller] Fetching orders since: ${sinceDate}`);
