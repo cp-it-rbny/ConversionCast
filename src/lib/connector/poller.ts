@@ -13,7 +13,11 @@ import type { HashedSignal, FunnelSignal } from "../types";
 class PollerService {
   private isPolling = false;
   private lastPollTime: number | null = null;
+  private lastSuccessfulPollTime: number | null = null;
   private lastPulledOrderId: number | null = null;
+
+  /** Cron cadence in ms — keep in sync with vercel.json schedule (currently 1 h) */
+  private static readonly CRON_INTERVAL_MS = 60 * 60 * 1000;
 
   /**
    * Fetches the latest orders from the provider API.
@@ -42,7 +46,14 @@ class PollerService {
     let duplicateCount = 0;
     
     try {
-      const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      // Derive the "since" window from the last *successful* poll time.
+      // On a cold serverless start lastSuccessfulPollTime is null, so we fall
+      // back to one cron interval ago (1 h) — matching the Vercel schedule.
+      const sinceTimestamp =
+        this.lastSuccessfulPollTime ??
+        Date.now() - PollerService.CRON_INTERVAL_MS;
+      const sinceDate = new Date(sinceTimestamp).toISOString();
+      console.log(`🕐 [Poller] Fetching orders since: ${sinceDate}`);
       let currentEndDate: string | undefined = undefined;
       let hasMore = true;
       let pageCount = 0;
@@ -152,6 +163,9 @@ class PollerService {
         console.log(`✅ [Poller] Updated high-watermark OrderId to: ${this.lastPulledOrderId}`);
       }
 
+      // Persist successful poll time so the next run knows its since window.
+      this.lastSuccessfulPollTime = this.lastPollTime;
+
       console.log(`✅ [Poller] Sweep complete. Pages: ${pageCount}, Processed: ${processedCount}, Duplicates: ${duplicateCount}`);
       
       return {
@@ -172,6 +186,10 @@ class PollerService {
 
   getLastPollTime() {
     return this.lastPollTime;
+  }
+
+  getLastSuccessfulPollTime() {
+    return this.lastSuccessfulPollTime;
   }
 }
 
