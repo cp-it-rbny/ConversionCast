@@ -117,7 +117,9 @@ export async function castToMeta(
           `\n   Event: ${signal.eventName}`,
           `\n   Event ID: ${signal.eventId}`,
           `\n   Mode: ${mode}`,
-          `\n   Attempt: ${attempt}`
+          `\n   Attempt: ${attempt}`,
+          `\n   Payload:`,
+          JSON.stringify(payload, null, 2)
         );
 
         return {
