@@ -33,7 +33,7 @@ function buildMetaPayload(signal: HashedSignal) {
         custom_data: {
           value: signal.value,
           currency: signal.currency,
-          order_id: signal.orderId,
+          order_id: signal.eventId,
           channel: signal.channel || undefined,
           product_name: signal.productName || undefined,
           payment_method: signal.paymentMethod || undefined,
