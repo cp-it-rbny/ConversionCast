@@ -95,7 +95,6 @@ export function normalizeTicketOrder(
     // Custom data
     currency: "USD",
     value: totalValue,
-    orderId: order.orderId,
     channel: order.channel || "",
     productName: order.productName || "",
     paymentMethod: order.paymentMethod || "",

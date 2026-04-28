@@ -72,7 +72,6 @@ export function hashSignal(signal: NormalizedSignal): HashedSignal {
     // Non-PII fields pass through
     currency: signal.currency,
     value: signal.value,
-    orderId: signal.orderId,
     channel: signal.channel,
     productName: signal.productName,
     paymentMethod: signal.paymentMethod,

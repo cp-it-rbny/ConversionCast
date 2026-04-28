@@ -61,7 +61,6 @@ export interface NormalizedSignal {
   // Custom data
   currency: string;
   value: number;
-  orderId: string;
   channel: string;
   productName: string;
   paymentMethod: string;
@@ -93,7 +92,6 @@ export interface HashedSignal {
   // Custom data (not PII, no hashing needed)
   currency: string;
   value: number;
-  orderId: string;
   channel: string;
   productName: string;
   paymentMethod: string;
