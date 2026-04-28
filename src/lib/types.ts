@@ -21,6 +21,10 @@ export interface RawTicketOrder {
   promoCode: string;
   salesRepId: number;
   salesRepName: string;
+
+  // Enriched fields — populated by fetchOrderDetail + fetchEvent
+  channel?: string;
+  productName?: string; // Event title from /api/v1/events/{id}
 }
 
 /**
@@ -57,9 +61,10 @@ export interface NormalizedSignal {
   // Custom data
   currency: string;
   value: number;
-  contentName: string;
-  contentCategory: string;
-  numItems: number;
+  orderId: string;
+  channel: string;
+  productName: string;
+  paymentMethod: string;
 
   // Metadata
   signalStrength: number; // 1-10
@@ -88,9 +93,10 @@ export interface HashedSignal {
   // Custom data (not PII, no hashing needed)
   currency: string;
   value: number;
-  contentName: string;
-  contentCategory: string;
-  numItems: number;
+  orderId: string;
+  channel: string;
+  productName: string;
+  paymentMethod: string;
 
   // Metadata
   signalStrength: number;

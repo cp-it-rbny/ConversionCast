@@ -127,8 +127,21 @@ class PollerService {
             continue; // Skip already casted signals
           }
 
-          // 3. Normalize (Raw -> Normalized)
-          const normalized = normalizeTicketOrder(rawOrder);
+          // 3. Enrich order with detail + event title, then Normalize (Raw -> Normalized)
+          const detail = await siTicketsClient.fetchOrderDetail(rawOrder.orderId);
+          const firstEventId = detail.lineItems?.[0]?.eventId;
+          const eventInfo = firstEventId
+            ? await siTicketsClient.fetchEvent(firstEventId)
+            : {};
+
+          const enrichedOrder = {
+            ...rawOrder,
+            channel: detail.channel ?? rawOrder.channel ?? "",
+            paymentMethod: detail.paymentMethod ?? rawOrder.paymentMethod ?? "",
+            productName: eventInfo.title ?? "",
+          };
+
+          const normalized = normalizeTicketOrder(enrichedOrder);
 
           // 4. Hash (Normalized -> Hashed)
           const hashed: HashedSignal = hashSignal(normalized);

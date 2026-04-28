@@ -68,7 +68,7 @@ export function normalizeTicketOrder(
   const ticketPrice = parseFloat(
     (order.ticketPrice || "0").replace(/[^0-9.-]/g, "")
   );
-  const totalValue = ticketPrice * (order.ticketQuantity || 1);
+  const totalValue = ticketPrice;
 
   // Determine event lane — all ticket orders are "Purchase" for MVP
   const lane: SignalLane = "Purchase";
@@ -93,11 +93,12 @@ export function normalizeTicketOrder(
     country: "",
 
     // Custom data
-    currency: "usd",
+    currency: "USD",
     value: totalValue,
-    contentName: `Ticket - ${order.orderType || "General"}`,
-    contentCategory: "soccer_ticket",
-    numItems: order.ticketQuantity || 1,
+    orderId: order.orderId,
+    channel: order.channel || "",
+    productName: order.productName || "",
+    paymentMethod: order.paymentMethod || "",
 
     signalStrength: computeSignalStrength(order),
   };

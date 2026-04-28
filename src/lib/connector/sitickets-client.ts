@@ -1,6 +1,7 @@
 import type { RawTicketOrder } from "../types";
 
 const BASE_URL = "https://prod.api.insights.sitickets.com/api/v1/orders";
+const API_ROOT  = "https://prod.api.insights.sitickets.com/api/v1";
 
 export class SITicketsClient {
   private apiToken: string;
@@ -72,6 +73,73 @@ export class SITicketsClient {
     } catch (error) {
       console.error("❌ [SITicketsClient] Failed to fetch orders:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Fetches the full detail for a single order.
+   * Endpoint: GET /api/v1/order/{orderId}
+   * Returns the payment object (channel) and line items (for eventId lookup).
+   */
+  async fetchOrderDetail(orderId: string): Promise<{
+    channel?: string;
+    paymentMethod?: string;
+    lineItems?: Array<{ eventId?: string | number; [key: string]: unknown }>;
+  }> {
+    try {
+      const url = `${API_ROOT}/order/${orderId}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${this.apiToken}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      });
+      if (!response.ok) {
+        console.warn(`⚠️ [SITicketsClient] fetchOrderDetail ${orderId} → ${response.status}`);
+        return {};
+      }
+      const body = await response.json();
+      // The API may wrap the order under a `data` key or return it directly
+      const detail = body.data ?? body;
+      return {
+        channel: detail.payment?.channel ?? detail.channel,
+        paymentMethod: detail.payment?.paymentMethod ?? detail.paymentMethod,
+        lineItems: detail.lineItems ?? detail.line_items ?? [],
+      };
+    } catch (err) {
+      console.warn(`⚠️ [SITicketsClient] fetchOrderDetail failed for ${orderId}:`, err);
+      return {};
+    }
+  }
+
+  /**
+   * Fetches event details by event ID.
+   * Endpoint: GET /api/v1/events/{id}
+   * Returns the event title to use as product_name.
+   */
+  async fetchEvent(eventId: string | number): Promise<{ title?: string }> {
+    try {
+      const url = `${API_ROOT}/events/${eventId}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${this.apiToken}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      });
+      if (!response.ok) {
+        console.warn(`⚠️ [SITicketsClient] fetchEvent ${eventId} → ${response.status}`);
+        return {};
+      }
+      const body = await response.json();
+      const detail = body.data ?? body;
+      return { title: detail.title ?? detail.name };
+    } catch (err) {
+      console.warn(`⚠️ [SITicketsClient] fetchEvent failed for ${eventId}:`, err);
+      return {};
     }
   }
 }
