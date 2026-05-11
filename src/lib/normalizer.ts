@@ -64,9 +64,9 @@ export function normalizeTicketOrder(
 ): NormalizedSignal {
   const { firstName, lastName } = splitName(order.customerName || "");
 
-  // Parse the price value (remove currency symbols, handle string format)
+  // Parse the price value (coerce to string first — API may return string or number)
   const ticketPrice = parseFloat(
-    (order.ticketPrice || "0").replace(/[^0-9.-]/g, "")
+    String(order.ticketPrice ?? "0").replace(/[^0-9.-]/g, "")
   );
   const totalValue = ticketPrice;
 

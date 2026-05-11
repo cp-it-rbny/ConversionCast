@@ -11,9 +11,9 @@ export interface RawTicketOrder {
   memberId: string;
   orderType: string;
   ticketQuantity: number;
-  ticketPrice: string;
-  ticketTax: string;
-  processingFees: string;
+  ticketPrice: string | number;
+  ticketTax: string | number;
+  processingFees: string | number;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
