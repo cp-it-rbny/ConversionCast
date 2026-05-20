@@ -78,7 +78,7 @@ export class SITicketsClient {
 
   /**
    * Fetches the full detail for a single order.
-   * Endpoint: GET /api/v1/order/{orderId}
+   * Endpoint: GET /api/v1/orders/{orderId}
    * Returns the payment object (channel) and line items (for eventId lookup).
    */
   async fetchOrderDetail(orderId: string): Promise<{
@@ -87,7 +87,7 @@ export class SITicketsClient {
     lineItems?: Array<{ eventId?: string | number; [key: string]: unknown }>;
   }> {
     try {
-      const url = `${API_ROOT}/order/${orderId}`;
+      const url = `${API_ROOT}/orders/${orderId}`;
       const response = await fetch(url, {
         method: "GET",
         headers: {
