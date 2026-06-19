@@ -119,7 +119,7 @@ export class SITicketsClient {
    * Endpoint: GET /api/v1/events/{id}
    * Returns the event title to use as product_name.
    */
-  async fetchEvent(eventId: string | number): Promise<{ title?: string }> {
+  async fetchEvent(eventId: string | number): Promise<{ title?: string; homeTeam?: string }> {
     try {
       const url = `${API_ROOT}/events/${eventId}`;
       const response = await fetch(url, {
@@ -136,7 +136,10 @@ export class SITicketsClient {
       }
       const body = await response.json();
       const detail = body.data ?? body;
-      return { title: detail.title ?? detail.name };
+      return { 
+        title: detail.title ?? detail.name,
+        homeTeam: detail.homeTeam ?? detail.home_team
+      };
     } catch (err) {
       console.warn(`⚠️ [SITicketsClient] fetchEvent failed for ${eventId}:`, err);
       return {};

@@ -134,6 +134,13 @@ class PollerService {
             ? await siTicketsClient.fetchEvent(firstEventId)
             : {};
 
+          if (eventInfo.homeTeam !== "Red Bull New York") {
+            console.log(`ℹ️ [Poller] Skipping order ${rawOrder.orderId}: This is not a Red Bull New York event (homeTeam: ${eventInfo.homeTeam || "Unknown"})`);
+            continue;
+          } else {
+            console.log(`✅ [Poller] Processing order ${rawOrder.orderId}: This is a Red Bull New York event`);
+          }
+
           const enrichedOrder = {
             ...rawOrder,
             channel: detail.channel ?? rawOrder.channel ?? "",
