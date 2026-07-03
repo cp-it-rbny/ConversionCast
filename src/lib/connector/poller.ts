@@ -180,6 +180,12 @@ class PollerService {
             payload: normalized
           });
 
+          if (error) {
+            console.error(`❌ [Poller] Failed to insert order ${normalized.orderId} into Supabase:`, error.message);
+          } else {
+            console.log(`☁️ [Poller] Successfully stored order ${normalized.orderId} into Supabase!`);
+          }
+
           signalStore.updateSignal(uiSignal.id, {
             status: error ? "failed" : "cast",
             castResult: {
