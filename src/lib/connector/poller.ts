@@ -4,6 +4,7 @@ import { hashSignal } from "../hasher";
 import { castToMeta } from "../meta/capi-sender";
 import { signalStore } from "../signal-store";
 import { siTicketsClient } from "./sitickets-client";
+import { supabase } from "../supabase-client";
 import type { HashedSignal, FunnelSignal } from "../types";
 
 /**
@@ -171,12 +172,24 @@ class PollerService {
           };
           signalStore.addSignal(uiSignal);
 
-          // 6. Cast to Meta CAPI (Egress)
-          // Awaiting the cast ensures that Vercel doesn't kill the function before Meta receives the event.
-          const result = await castToMeta(hashed, options?.credentials);
+          // 6. Store in Supabase instead of Meta CAPI
+          const { error } = await supabase.from('conversions').insert({
+            event_id: normalized.orderId,
+            event_type: "Purchase",
+            event_timestamp: new Date(normalized.eventTime * 1000).toISOString(),
+            payload: normalized
+          });
+
           signalStore.updateSignal(uiSignal.id, {
-            status: result.success ? "cast" : "failed",
-            castResult: result,
+            status: error ? "failed" : "cast",
+            castResult: {
+              success: !error,
+              eventId: normalized.orderId,
+              platform: "meta", // Kept as 'meta' for UI compatibility, or could be 'supabase'
+              mode: "live",
+              timestamp: Date.now(),
+              error: error?.message
+            } as any,
           });
 
           processedCount++;
